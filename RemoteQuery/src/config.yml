@@ -1,0 +1,16 @@
+# Do NOT change the config version!
+config_version: 1
+# Set locale for user dialog messages
+language: de
+# Enable debug output
+debug: false
+#
+# HTTP Request options
+#
+# URL of PHP script on remote host to execute DB query
+scriptURL: 'http://myRemoteServersURL/my/script.php/'
+#
+# Secret key for encryption/decryption of transmitted/received HTTP data
+# from and to remote PHP script. (exactly 16 HEX chars)
+# This MUST match with the secret key used in the remote PHP script!
+secretKey: '01234567890ABCDE'
