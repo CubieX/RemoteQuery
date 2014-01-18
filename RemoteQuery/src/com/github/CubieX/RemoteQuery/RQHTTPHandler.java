@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -118,10 +117,10 @@ public class RQHTTPHandler
 
                if(RemoteQuery.debug){sender.sendMessage("PHP Response: " + response.toString());}
 
-               // construct hash of given PW and salt
-               //String hash = constructPWhashForIPboard(escapeHTML("myPW"), "|AmJu"); // TODO get IPboard hash method running!
+               // construct password hash from given Salt and PW for IPboard v3
+               String hash = constructPWhashForIPboard("saltFromDB", "pwPlayerEntered");
 
-               //if(RemoteQuery.debug){sender.sendMessage("PLUGIN: Hash: " + hash);}              
+               if(RemoteQuery.debug){sender.sendMessage("PLUGIN: Hash: " + hash);}              
             }
             catch (Exception e)
             {
@@ -172,7 +171,7 @@ public class RQHTTPHandler
          encMsgAsBytes = hexStringToByteArray(encryptedMessage);
          SecretKeySpec keyspec = new SecretKeySpec(RemoteQuery.secretKey.getBytes("UTF-8"), "AES");
          //IvParameterSpec ivspec = new IvParameterSpec(iv.getBytes("UTF-8"));         
-         //cipher.init(Cipher.ENCRYPT_MODE,keyspec,ivspec); // CBC uses iv
+         //cipher.init(Cipher.ENCRYPT_MODE,keyspec, ivspec); // CBC uses iv
          cipher.init(Cipher.DECRYPT_MODE, keyspec); // ECB uses no iv
          decrypted = cipher.doFinal(encMsgAsBytes);         
       }
@@ -202,11 +201,18 @@ public class RQHTTPHandler
       return plainText;
    }
 
-   private String constructPWhashForIPboard(String pw, String salt)
+   /**
+    * Constructs the password hash for IPboard v3
+    * $hash = md5( md5( $salt ) . md5( $password ) );
+    * 
+    * @param salt The salt in database for the user. 5 Bytes. (members_pass_salt)
+    * @param pw The plain text password of the user
+    * 
+    * @return hash The resulting IPboard hash as HEX string (members_pass_hash)
+    * */
+   private String constructPWhashForIPboard(String salt, String pw)
    {
-      String hash = "";
-
-      //$hash = md5( md5( $salt ) . md5( $password ) );
+      //$hash = md5( md5( $salt ) . md5( $cleaned_password ) );
       /* this is how IPboard constructs the hash
          $hash is the value stored in the database column members_pass_hash.
          $salt is the value stored in the database column members_pass_salt.
@@ -214,47 +220,47 @@ public class RQHTTPHandler
          see: http://www.invisionpower.com/support/guides/_/advanced-and-developers/integration/login-modules-r42)
        */
 
-      byte[] hashedPW = null;
-      byte[] hashedSalt = null;
+      String hash = "";
+      String hashedPWhex = null;
+      String hashedSaltHex = null;
 
       try
       {
-         hashedPW = getMD5(pw.getBytes("UTF-8")); // beware of special chars! IPboard chnages some chars to other format. e.g.: ! -> &#33;
-         if(RemoteQuery.debug){RemoteQuery.log.info("Hashed PW: " + bytesToHexString(hashedPW));}
-         hashedSalt = getMD5(salt.getBytes("UTF-8"));
-         if(RemoteQuery.debug){RemoteQuery.log.info("Hashed Salt: " + bytesToHexString(hashedSalt));}
+         hashedPWhex = getMD5(escapeHTML(pw).getBytes("UTF-8")); // escapeHTML converts some special chars into HTML entities (see file: HtmlCharacterEntityReferencesForIPboard.properties)
+         if(RemoteQuery.debug){RemoteQuery.log.info("PLUGIN Hashed PW: " + hashedPWhex);}
+         hashedSaltHex = getMD5(salt.getBytes("UTF-8"));
+         if(RemoteQuery.debug){RemoteQuery.log.info("PLUGIN Hashed Salt: " + hashedSaltHex);}
+         String concatValue = hashedSaltHex.concat(hashedPWhex);         
+         hash = getMD5(concatValue.getBytes("UTF-8"));
       }
       catch (UnsupportedEncodingException e)
       {       
          e.printStackTrace();
       }
 
-      byte[] concatValue = concatByteArrays(hashedPW, hashedSalt);
-      hash = bytesToHexString(getMD5(concatValue));
-
       return hash;
    }
 
-   private byte[] getMD5(byte[] value)
+   // returns HEX string
+   private String getMD5(byte[] value)
    {      
       byte[] theDigest = null;      
       MessageDigest md = null;
+      String md5inHex = "";
 
       try
       {  
-         md = MessageDigest.getInstance("MD5");
+         md = MessageDigest.getInstance("MD5");         
+         md.update(value);
+         theDigest = md.digest();
+         md5inHex = bytesToHexString(theDigest);
       }      
       catch (NoSuchAlgorithmException e)
       {         
          e.printStackTrace();
       }
-
-      if(null != md)
-      {
-         theDigest = md.digest(value);
-      }
-
-      return theDigest;
+      
+      return md5inHex;
    }
 
    private String bytesToHexString(byte[] bytes)
@@ -267,7 +273,7 @@ public class RQHTTPHandler
          hexChars[j * 2 + 1] = hexArray[v & 0x0F];
       }
 
-      return new String(hexChars);
+      return new String(hexChars).toLowerCase();
    }
 
    private byte[] hexStringToByteArray(String s)

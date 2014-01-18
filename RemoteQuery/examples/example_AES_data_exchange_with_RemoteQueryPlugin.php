@@ -131,23 +131,24 @@ function sqlGetPlayerData($userName)
 
 // BEGIN ACTIONS ================================================================
 
-// Get User data from DB
-//echo " DEBUG Decrypting user name: " . $encryptedUserName . " ...";
-$plainUserName = cryptare(hex2bin($encryptedUserName), $secret_key, $cipher, 0);
-//echo " DEBUG Decrypted user name to : " . $plainUserName;
-//echo " DEBUG DB UserData: " . sqlGetPlayerData($plainUserName);
-
-//echo htmlentities(" DEBUG_Echo u=" . $encryptedUserName); // for well formed HTML output
-
 // DEBUG
-//echo " Calling cryptare in ENcrypt mode...";
-//$encryptedTextBIN = cryptare($plainUserName, $secret_key, $cipher, 1); // ENCRYPT
-//$encryptedTextHEX = bin2hex($encryptedTextBIN); // convert to HEX to safely send via HTML
-//echo " Encrypted Text Original: " . $encryptedTextBIN;
-//echo " Encrypted Text HEX (padded): " . $encryptedTextHEX;
-//echo " Calling cryptare in DEcrypt mode...";
-//$encryptedTextBIN = hex2bin($encryptedTextHEX); // convert back to BIN to input into decryptor
-//echo " Encrypted Text converted back from HEX to BIN: " . $encryptedTextBIN;
-//$plainUserName = cryptare($encryptedTextBIN, $secret_key, $cipher, 0); // DECRYPT
-//echo " Decrypted Text Original: " . $plainUserName;
+/*echo " Calling cryptare in ENcrypt mode...";
+$encryptedTextBIN = cryptare($plainUserName, $secret_key, $cipher, 1); // ENCRYPT
+$encryptedTextHEX = bin2hex($encryptedTextBIN); // convert to HEX to safely send via HTML
+echo " Encrypted Text Original: " . $encryptedTextBIN;
+echo " Encrypted Text HEX (padded): " . $encryptedTextHEX;
+echo " Calling cryptare in DEcrypt mode...";
+$encryptedTextBIN = hex2bin($encryptedTextHEX); // convert back to BIN to input into decryptor
+echo " Encrypted Text converted back from HEX to BIN: " . $encryptedTextBIN;
+$plainUserName = cryptare($encryptedTextBIN, $secret_key, $cipher, 0); // DECRYPT
+echo " Decrypted Text Original: " . $plainUserName;*/
+
+// TEST MD5 for IP board:
+// IPboard password hash formula: $hash = md5( md5( $salt ) . md5( $password ) );
+/*$pwHash = md5('testPass', FALSE);
+$saltHash = md5('testSalt', FALSE);
+$hash = md5($saltHash . $pwHash);
+echo " PHP pwHash: " . $pwHash;
+echo " PHP saltHash: " . $saltHash;
+echo " PHP hash: " . $hash;*/
 ?>

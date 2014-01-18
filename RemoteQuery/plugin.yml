@@ -2,7 +2,7 @@ name: RemoteQuery
 main: com.github.CubieX.RemoteQuery.RemoteQuery
 author: CubieX
 softdepend: [PermissionsEx, zPermissions, bPermissions, PermissionsBukkit]
-version: 0.0.1
+version: 0.0.2
 description: Query remote DB via HTTP by calling a PHP script
 
 commands:

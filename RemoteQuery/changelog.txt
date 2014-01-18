@@ -1,5 +1,10 @@
 Changelog for RemoteQuery by CubieX
 -----------------------------------
 
+V.0.0.2
+- AES bidirectional communication with PHP script now working
+- IPboard v3 user password HASH value can now be constructed by given plain text forum password
+  and salt for player password in forum DB
+
 V.0.0.1
 - Initial Alpha version
